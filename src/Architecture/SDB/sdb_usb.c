@@ -20,7 +20,9 @@ typedef struct MCSPacket {
     unsigned char *data;
 } MCSPacket;
 
-byte[] mcsConvert(MCSPacket packet)
+*/
+
+byte[] sdbToUsb(MCSPacket packet)
 {
 	if(packet.type == MCS_TYPE_PAYLOAD) {
 
@@ -34,7 +36,7 @@ byte[] mcsConvert(MCSPacket packet)
 		return NULL;
 	}
 }
-*/
+
 
 
 void* usb_thread(void *arg)
@@ -43,17 +45,12 @@ void* usb_thread(void *arg)
 
 	int fd = open(THE_DEVICE, O_RDWR);
 
-	//MCSPacket packet;
+	MCSPacket packet;
 
 	while(packet = usb_queue_pop()){
-
-		//get packet
-		//execute packet
-		//send response
-		//signal process
-
-		char *buffer=packet;
+		char[] buf = sdbToUsb(packet);
 		write(fd,&buffer,sizeof(buffer));	
+		read(fd,&response);
 		pthread_cond_signal(&cond);	
 	}
 }

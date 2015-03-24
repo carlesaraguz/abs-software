@@ -1,5 +1,6 @@
 #include "sdb_dummy.h"
 
+pthread_cond_t cond  = PTHREAD_COND_INITIALIZER;
 
 void* push(void *arg)
 {
@@ -13,16 +14,20 @@ void* push(void *arg)
 
 int main(int argc , char *argv[])
 {
-    pthread_t tid[2];
+    pthread_t tid;
 
     usb_queue_init();
 
-    pthread_create(&(tid[0]), NULL, &push, NULL);
+    pthread_create(&(tid), NULL, &sdb_usb, NULL);
 
-    pthread_create(&(tid[1]), NULL, &sdb_usb, NULL);
+    while(1)
+    {
+        usb_queue_push("hi",1);
+        pthread_cond_wait(&cond);
 
-    pthread_join(tid[0], NULL);
-    pthread_join(tid[1], NULL);	
+    }
+
+
 
 }
 

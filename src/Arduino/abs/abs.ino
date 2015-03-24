@@ -1,6 +1,7 @@
 #include <adk.h>
 #include <usbhub.h>
 #include "TimerOne.h"
+#include <SoftwareSerial.h>
 
 typedef enum {
     BASIC_IO = 1,
@@ -8,15 +9,23 @@ typedef enum {
     EVENTS = 3
 } Format;
 
+const int bitrate[] = {300, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600,  115200};
+
+SoftwareSerial mySerial[2] = {SoftwareSerial(6,7),
+                              SoftwareSerial(7,8)};
+
 USB Usb;
 USBHub hub0(&Usb);
 USBHub hub1(&Usb);
-ADK adk(&Usb,"UPC, BarcelonaTech",
-            "Android Beyond the Stratoshpere",
-            "Android Beyond the Stratoshpere",
+
+ADK adk(&Usb,"Google, Inc.",
+            "DemoKit",
+            "DemoKit Arduino Board",
             "1.0",
-            "http://www.upc.edu",
-            "000000000000000001");
+            "http://www.android.com",
+            "0000000012345678");
+            
+       
 
 void setup()
 {
@@ -28,38 +37,36 @@ void setup()
           Serial.println("OSCOKIRQ failed to assert");
         while(1); //halt
         }//if (Usb.Init() == -1...
+        
 
-
-        Timer1.initialize(500000);        
-        Timer1.pwm(9, 512);                
-        Timer1.attachInterrupt(stateChange);
 }
 
 void loop()
 {
-  
-  
   Usb.Task();
    
    /* if( adk.isReady() == false ) */
     
    int pin = 0;
-   int par = 0;
    int res = 0;
+   
+   int i = 0;
    
    uint8_t rcode;
    uint8_t msg[9]; 
-   uint16_t len;
-   
+   uint16_t len=0;
+    
    rcode = adk.RcvData(&len, msg);
    if(len > 0) {      
       byte cmd = (msg[0]>>5)&0x07; 
+      Serial.println("hello\n");
       switch(cmd){
       case BASIC_IO:
+        Serial.println("hello\n");
         /* Command type: BASIC_IO */
-        par = (msg[0]>>3)&0x03;
+        cmd = (msg[0]>>3)&0x03;
         pin = (msg[1]>>1)&0xFF;
-        switch(par){
+        switch(cmd){
           case 0:
             /* Analog Write */
             analogWrite(pin, (msg[0]<<5)&0xC0);
@@ -79,9 +86,21 @@ void loop()
         }
         break;
       case COMMS:
-        /* Command type: Serial comms */
+        /* Command type: Serial Comms */
         Serial.println("Comms"); 
-        //TODO
+        switch(cmd){
+          case 0:
+              mySerial[i].begin(bitrate[(msg[0]<<1)&0x07]);
+              break;
+           case 1:
+               if(1 <= i)
+                 mySerial[1].read();
+             break;
+           case 2:
+               if(1 <= i)
+                 mySerial[1].println(msg[2]);
+             break;
+        }
         break;
       case EVENTS:
         /* Command type: Events */
@@ -91,11 +110,12 @@ void loop()
       default:
         Serial.println("Unknown");
     }
+    /* Send response packet */
    }
    delay( 10 );       
 }
 
 void stateChange()
 {
-   digitalWrite(11, HIGH); 
+   
 }
