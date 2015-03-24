@@ -2,6 +2,7 @@ package com.google.abs.payloadsdk;
 
 public enum CmdType
 {
+    HAND_SHAKE      (new byte[]{0, 0, 0}),
     DIGITAL_WRITE   (new byte[]{1, 0, 1}),
     DIGITAL_READ    (new byte[]{1, 0, 2}),
     ANALOG_WRITE    (new byte[]{1, 0, 3}),

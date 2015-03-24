@@ -10,16 +10,18 @@ import com.google.abs.payloadsdk.Measures.Energy;
 import com.google.abs.payloadsdk.Measures.OrbitalState;
 import com.google.abs.payloadsdk.Measures.Power;
 import com.google.abs.payloadsdk.SBD.SDB;
+import com.google.abs.payloadsdk.SBD.SDBPacket;
 
 
 public class PayloadAPP extends Service {
 
     private SDB sdb;
 
-    public PayloadAPP()
+    public PayloadAPP(String appName)
     {
         sdb = new SDB();
         sdb.execute();
+        /* sdb.send(new SDBPacket(CmdType.HAND_SHAKE,appName.getBytes())); */
     }
 
     public Arduino getArduino()

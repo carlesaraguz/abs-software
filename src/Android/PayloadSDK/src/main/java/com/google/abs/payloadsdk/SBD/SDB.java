@@ -1,5 +1,6 @@
 package com.google.abs.payloadsdk.SBD;
 
+import android.app.Service;
 import android.util.Log;
 import java.net.Socket;
 import java.io.IOException;
@@ -14,6 +15,11 @@ public class SDB extends android.os.AsyncTask<Void, Void, Void> {
     private DataInputStream rxStream;
     private DataOutputStream txStream;
     private boolean connected = false;
+
+    public SDB()
+    {
+        /*SDB_handshake name:group*/
+    }
 
     @Override
     protected Void doInBackground(Void... params)
@@ -41,7 +47,7 @@ public class SDB extends android.os.AsyncTask<Void, Void, Void> {
      * @return          response to the SDBPacket
      */
 
-    public byte[] send(SDBPacket packet)
+    public synchronized byte[] send(SDBPacket packet)
     {
         waitForSocketToConnect();
         if(socket.isConnected()) {
@@ -76,13 +82,19 @@ public class SDB extends android.os.AsyncTask<Void, Void, Void> {
 
     private boolean waitForSocketToConnect()
     {
-        if (connected)
+        if(connected) {
             return true;
-        while (!connected) {
+        }
+        int count = 0;
+        while(!connected) {
             try {
                 Thread.sleep(500);
+                count++;
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+            if(count>20) {
+                System.exit(0); /* kill it */
             }
         }
         return connected;

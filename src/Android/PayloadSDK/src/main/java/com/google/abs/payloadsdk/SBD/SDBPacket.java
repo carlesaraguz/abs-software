@@ -12,7 +12,7 @@ public class SDBPacket {
     private ArrayList<Byte> parameters;
 
 
-    public SDBPacket(CmdType cmd)
+    public SDBPacket(CmdType cmd, byte[] bytes)
     {
         this.cmd = cmd;
         Log.d("[ABS]", "SDBPacket created");
