@@ -25,7 +25,7 @@ static void swap(USBQueue *q, int i, int j)
     q->buf[j] = temp;
 }
 
-void usb_queue_push(void *data, int priority)
+void usb_queue_push(void *data, int id_process)
 {
     int i,n;
     QueueElement *b;
@@ -35,7 +35,7 @@ void usb_queue_push(void *data, int priority)
     b = queue->buf;
     n = queue->n++;
     b[n].data = data;
-    b[n].priority = priority;
+    b[n].priority = sdb_group_priority[sdb_module[id_process].group];
     for(i = n; (i > 1) && (b[i].priority < b[i-1].priority); i--) {
         swap(queue, i, i-1);
     }
@@ -45,7 +45,7 @@ void usb_queue_push(void *data, int priority)
     pthread_mutex_unlock(&usb_queue_lock);
 }
 
-void * usb_queue_pop(int *priority)
+void * usb_queue_pop(int *id_process)
 {
     int i;
     void *out;
@@ -60,7 +60,7 @@ void * usb_queue_pop(int *priority)
     /* Reorder the queue and pop the first element. */
     QueueElement *b = queue->buf;
     out = b[1].data;
-    if (priority) *priority = b[1].priority;
+    if (id_process) *id_process = b[1].id_process;
     b[1] = b[queue->n];
     queue->n--;
     for(i = 1; i <= queue->n; i++) {

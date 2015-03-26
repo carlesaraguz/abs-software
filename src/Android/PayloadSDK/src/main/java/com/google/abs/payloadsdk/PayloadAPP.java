@@ -10,43 +10,45 @@ import com.google.abs.payloadsdk.Measures.Energy;
 import com.google.abs.payloadsdk.Measures.OrbitalState;
 import com.google.abs.payloadsdk.Measures.Power;
 import com.google.abs.payloadsdk.SBD.SDB;
-import com.google.abs.payloadsdk.SBD.SDBPacket;
 
 
-public class PayloadAPP extends Service {
+
+public class PayloadApp extends Service {
 
     private SDB sdb;
+    private Arduino arduino;
 
-    public PayloadAPP(String appName)
+    public PayloadApp(String appName)
     {
         sdb = new SDB();
         sdb.execute();
+        arduino = new Arduino(sdb);
         /* sdb.send(new SDBPacket(CmdType.HAND_SHAKE,appName.getBytes())); */
     }
 
     public Arduino getArduino()
     {
-        return new Arduino(sdb);
+        return arduino;
     }
 
     public Attitude getAttitude()
     {
-        return new Attitude();
+        return null;
     }
 
     public Energy getEnergy()
     {
-        return new Energy();
+        return null;
     }
 
     public Power getPower()
     {
-        return new Power();
+        return null;
     }
 
     public OrbitalState orbitalState()
     {
-        return new OrbitalState();
+        return null;
     }
 
     @Override

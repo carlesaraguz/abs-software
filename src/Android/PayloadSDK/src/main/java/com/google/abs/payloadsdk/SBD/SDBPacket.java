@@ -1,9 +1,7 @@
 package com.google.abs.payloadsdk.SBD;
 
 import android.util.Log;
-
 import com.google.abs.payloadsdk.CmdType;
-
 import java.util.ArrayList;
 
 public class SDBPacket {
@@ -11,8 +9,7 @@ public class SDBPacket {
     private CmdType cmd;
     private ArrayList<Byte> parameters;
 
-
-    public SDBPacket(CmdType cmd, byte[] bytes)
+    public SDBPacket(CmdType cmd)
     {
         this.cmd = cmd;
         Log.d("[ABS]", "SDBPacket created");
@@ -39,19 +36,15 @@ public class SDBPacket {
 
     private byte[] concatenate(byte[]...arrays)
     {
-        /* Determine the length of the result array */
         int totalLength = 0;
-        for (int i = 0; i < arrays.length; i++) {
-            totalLength += arrays[i].length;
+        for (byte[] array : arrays) {
+            totalLength += array.length;
         }
-        /* create the result array */
         byte[] result = new byte[totalLength];
-
-        /* copy the source arrays into the result array */
         int currentIndex = 0;
-        for (int i = 0; i < arrays.length; i++) {
-            System.arraycopy(arrays[i], 0, result, currentIndex, arrays[i].length);
-            currentIndex += arrays[i].length;
+        for (byte[] array : arrays) {
+            System.arraycopy(array, 0, result, currentIndex, array.length);
+            currentIndex += array.length;
         }
         return result;
     }
