@@ -1,8 +1,6 @@
 package com.google.abs.payloadsdk.Arduino;
 
 import android.util.Log;
-
-import com.google.abs.payloadsdk.CmdType;
 import com.google.abs.payloadsdk.SBD.SDB;
 import com.google.abs.payloadsdk.SBD.SDBPacket;
 
@@ -30,8 +28,14 @@ public class Arduino {
 
     public int digitalWrite(int pin, int value)
     {
-        SDBPacket response = sdb.send(new SDBPacket(CmdType.DIGITAL_WRITE,(byte)pin,(byte)value));
-        return 1;
+        SDBPacket response = sdb.send(new SDBPacket(
+                SDBPacket.CMD.DIGITAL_WRITE,(byte)pin,(byte)value));
+
+        if(response.getCMD() == SDBPacket.CMD.OK) {
+            return 1;
+        } else {
+            return -1; /* something has gone wrong */
+        }
     }
 
     /**
@@ -41,10 +45,16 @@ public class Arduino {
      * @return      (boolean) 1 or 0
      */
 
-    public boolean digitalRead(int pin)
+    public int digitalRead(int pin)
     {
-        SDBPacket response = sdb.send(new SDBPacket(CmdType.DIGITAL_READ,(byte)pin));
-        return response.getParameter(1) == 1;
+        SDBPacket response = sdb.send(new SDBPacket(
+                SDBPacket.CMD.DIGITAL_READ,(byte)pin));
+
+        if(response.getCMD() == SDBPacket.CMD.OK_DATA) {
+            return response.getParameter(0);
+        } else {
+            return -1; /* something has gone wrong */
+        }
     }
 
     /**
@@ -57,8 +67,14 @@ public class Arduino {
 
     public int analogWrite(int pin, int value)
     {
-        SDBPacket response = sdb.send(new SDBPacket(CmdType.ANALOG_WRITE,(byte)pin));
-        return (int) response.getParameter(1);
+        SDBPacket response = sdb.send(new SDBPacket(
+                SDBPacket.CMD.ANALOG_WRITE,(byte)pin, (byte)value));
+
+        if(response.getCMD() == SDBPacket.CMD.OK) {
+            return 1;
+        } else {
+            return -1; /* something has gone wrong */
+        }
     }
 
     /**
@@ -70,7 +86,14 @@ public class Arduino {
 
     public int analogRead(int pin)
     {
-        SDBPacket response = sdb.send(new SDBPacket(CmdType.ANALOG_READ,(byte)pin));
-        return (int) response.getParameter(1);
+        SDBPacket response = sdb.send(new SDBPacket(
+                SDBPacket.CMD.ANALOG_READ,(byte)pin));
+
+        if(response.getCMD() == SDBPacket.CMD.OK_DATA) {
+            return response.getParameter(0);
+            /* TODO convert value to volts */
+        } else {
+            return -1; /* something has gone wrong */
+        }
     }
 }

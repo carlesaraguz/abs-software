@@ -63,9 +63,9 @@ void setup(void)
         Serial.println("OSCOKIRQ failed to assert");
         while(Usb.Init()==-1); /* retry */
     }
-        Timer1.initialize(500000);        
-        Timer1.pwm(9, 512);                
-        Timer1.attachInterrupt(events);
+    Timer1.initialize(500000);        
+    Timer1.pwm(9, 512);                
+    Timer1.attachInterrupt(events);
 }
 
 void loop(void)

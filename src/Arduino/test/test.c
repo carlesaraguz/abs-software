@@ -6,12 +6,13 @@
 #include <string.h>
 #include <unistd.h>
 
-#define THE_DEVICE "/dev/usb_accessory"
+#define SDB_USB_DEVICE "/dev/usb_accessory"
 
 int main(int argc, char const *argv[])
 {
+	int fd = open(SDB_USB_DEVICE, O_RDWR);
 
-	int fd = open(THE_DEVICE, O_RDWR);
+	/* Examples of basic I/O and event packets */
 
 	/*
      * Basic I/O
