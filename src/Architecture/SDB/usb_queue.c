@@ -1,16 +1,15 @@
 #include "usb_queue.h"
 
-USBQueue *queue;
+USBQueue queue;
 sem_t packet_queue_count;
 pthread_mutex_t usb_queue_lock;
 
 void usb_queue_init(void)
 {
     /* Initialize the usb queue */
-    queue = malloc(sizeof(USBQueue));
-    queue->buf = malloc(sizeof(QueueElement) * USB_QUEUE_SIZE);
-    queue->alloc = USB_QUEUE_SIZE;
-    queue->n = 1;
+    queue.buf = malloc(sizeof(QueueElement) * USB_QUEUE_SIZE);
+    queue.alloc = USB_QUEUE_SIZE;
+    queue.n = 0;
     pthread_mutex_init(&usb_queue_lock, NULL);
     /* Initialize the semaphore which counts packets in
     the usb queue.Its initial value should be zero. */
@@ -32,12 +31,12 @@ void usb_queue_push(void *data, int id_process)
     /* Lock the mutex on the usb queue. */
     pthread_mutex_lock(&usb_queue_lock);
     /* Add the element and reorder the queue. */
-    b = queue->buf;
-    n = queue->n++;
+    b = queue.buf;
+    n = queue.n++;
     b[n].data = data;
     b[n].priority = sdb_group_priority[sdb_module[id_process].group];
     for(i = n; (i > 1) && (b[i].priority < b[i-1].priority); i--) {
-        swap(queue, i, i-1);
+        swap(&queue, i, i-1);
     }
     /* Post to the semaphore to indicate another packet is available. */
     sem_post(&packet_queue_count);
@@ -45,28 +44,26 @@ void usb_queue_push(void *data, int id_process)
     pthread_mutex_unlock(&usb_queue_lock);
 }
 
-void * usb_queue_pop(int *id_process)
+void * usb_queue_pop(void)
 {
     int i;
-    void *out;
+    QueueElement *b;
     /* If the queue is empty, block until a new packet is enqueued.  */
     sem_wait(&packet_queue_count);
     /* Lock the mutex on the usb queue.  */
     pthread_mutex_lock(&usb_queue_lock);  
-    if(queue->n == 1) {
+    if(queue.n == 1) {
         pthread_mutex_unlock(&usb_queue_lock); 
         return NULL;
     }
     /* Reorder the queue and pop the first element. */
-    QueueElement *b = queue->buf;
-    out = b[1].data;
-    if (id_process) *id_process = b[1].id_process;
-    b[1] = b[queue->n];
-    queue->n--;
-    for(i = 1; i <= queue->n; i++) {
-        swap(queue, i, i-1);
+    b = queue.buf;
+    b[0] = b[queue.n];
+    queue.n--;
+    for(i = 1; i <= queue.n; i++) {
+        swap(&queue, i, i-1);
     }
     /* Unlock the usb queue mutex. */
     pthread_mutex_unlock(&usb_queue_lock); 
-    return out;
+    return &b[0];
 }

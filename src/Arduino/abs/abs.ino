@@ -6,6 +6,10 @@
 #define MAX_SERIAL 2
 #define MAX_EVENTS 10
 
+#define IS_PIN_DIGITAL(p)       ((p) >= 2 && (p) <= 19)
+#define IS_PIN_ANALOG(p)        ((p) >= 14 && (p) < 14 + 10)
+#define IS_PIN_PWM(p)           digitalPinHasPWM(p)
+
 typedef enum {
     BASIC_IO = 1,
     COMMS = 2,
@@ -32,7 +36,7 @@ struct Event {
 };
 
 uint8_t rc;
-byte cmd, par;
+byte command, mode;
 int pin = 0, num = 0, res = 0, i = 0, time = 0, eventCount = 0; 
 uint8_t msg[100] = { 0x00 };
 Event event_list[MAX_EVENTS];
@@ -51,66 +55,82 @@ ADK adk(&Usb, "UPC, BarcelonaTech",
               "1.0",
               "http://www.upc.edu",
               "000000000000000001");
-            
 
 void setup(void)
 {
-	Serial.begin(115200);
-	//while (!Serial); 
-	Serial.println("\r\nADK demo start");
+    Serial.begin(115200);
+    //while (!Serial); 
+    Serial.println("\r\nADK demo start");
         
     if(Usb.Init() == -1) {
         Serial.println("OSCOKIRQ failed to assert");
         while(Usb.Init()==-1); /* retry */
     }
-    Timer1.initialize(500000);        
-    Timer1.pwm(9, 512);                
+    Timer1.initialize(500000);
+    Timer1.pwm(9, 512);
     Timer1.attachInterrupt(events);
 }
 
 void loop(void)
 {  
     Usb.Task(); 
-    if(!adk.isReady()) {
-        return;
+    if(!adk.isReady()) { 
+        return; /* restart Arduino firmware */
     }
     uint16_t length = sizeof(msg);
     rc = adk.RcvData(&length, msg);
     if(length > 0) {
         noInterrupts();
-        cmd = (msg[0] >> 5) & 0x07;
-        switch(cmd) {
+        /* process packet */
+        command = (msg[0] >> 5) & 0x07;
+        switch(command) {
             case BASIC_IO:
                 /* Command type: BASIC_IO */
-                par = (msg[0] >> 3) & 0x03;
+                mode = (msg[0] >> 3) & 0x03;
                 pin = (msg[1] >> 1) & 0xFF;
-                switch(par) {    
+                switch(mode) {    
                     case ANALOG_WRITE:
                         /* Analog Write */
-                        pinMode(pin, OUTPUT);
-                        analogWrite(pin, (msg[0] << 5) & 0xC0);
+                        if(IS_PIN_ANALOG(pin) { 
+                            pinMode(pin, OUTPUT);
+                            analogWrite(pin, (msg[0] << 5) & 0xC0);
+                        } else {
+                            /* return error */
+                        }
                         break;
                     case DIGITAL_WRITE:
                         /* Digital Write */
-                        pinMode(pin, OUTPUT); 
-                        digitalWrite(pin, (msg[0] >> 2) & 0x01);
+                        if(IS_PIN_DIGITAL(pin) { 
+                            pinMode(pin, OUTPUT); 
+                            digitalWrite(pin, (msg[0] >> 2) & 0x01);
+                        } else {
+                            /* return error */
+                        }
                         break;
                     case ANALOG_READ:
                         /* Analog Read */
-                        res = analogRead(pin);
+                        if(IS_PIN_ANALOG(pin) { 
+                            res = analogRead(pin);
+                        } else {
+                            /* return error */
+                        }
                         break;
                     case DIGITAL_READ:
                         /* Digital Read */
-                        pinMode(pin, INPUT);
-                        res = digitalRead(pin);
+                        if(IS_PIN_DIGITAL(pin) { 
+                            pinMode(pin, INPUT);
+                            res = digitalRead(pin);
+                        } else {
+                            /* return error */
+                        }
                         break;
                 }  
                 break;    
             case COMMS:
                 /* Command type: Serial Comms */
-                par = (msg[0] >> 3) & 0x03; 
+                mode = (msg[0] >> 3) & 0x03;
                 num = (msg[1] << 1) & 0xFF;
-                switch(par) {     
+                switch(mode) {
                     case INIT:
                         /* Serial setup */
                         if(num <= MAX_SERIAL) {
@@ -119,13 +139,13 @@ void loop(void)
                         break;
                     case READ:
                         /* Serial read */
-                        if(num <= MAX_SERIAL){
+                        if(num <= MAX_SERIAL) {
                             mySerial[num].read();
                         }
                         break;
                     case WRITE:
                         /* Serial write */
-                        if(num <= MAX_SERIAL){
+                        if(num <= MAX_SERIAL) {
                             mySerial[num].println(msg[2]);
                         }
                         break;
@@ -147,18 +167,18 @@ void loop(void)
         }
         /* Send response packet */
         interrupts();
-    }      
-    delay(100);       
+    }
+    delay(100);
 }
 
 void events(void)
 {  
-   int i = 0;
-   for(i=0; i < eventCount; i++) {
-     if(time%event_list[i].time == 0) {
-       Serial.println("Event num: "+String(i));
-       //TODO
-     }
-   }
-   time++;
+    int i = 0;
+    for(i=0; i < eventCount; i++) {
+        if(time%event_list[i].time == 0) {
+            Serial.println("Event num: "+String(i));
+            //TODO
+        }
+    }
+    time++;
 }

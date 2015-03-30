@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
+
 #include "sdb.h"
 #include <sdb.h>
 
@@ -21,7 +22,7 @@ typedef struct USBQueue {
     int n, alloc; 
 } USBQueue;
 
-extern USBQueue *queue;
+extern USBQueue queue;
 
 extern pthread_mutex_t usb_queue_lock;
 
@@ -31,6 +32,6 @@ void usb_queue_init(void);
 
 void usb_queue_push(void *data, int id_process);
 
-void *usb_queue_pop(int *id_process);
+void *usb_queue_pop(void);
 
 #endif /* __USB_QUEUE_H */
