@@ -4,9 +4,9 @@ static char *sdb_to_usb(MCSPacket *packet, int *size)
 {
     if(packet->type == MCS_TYPE_PAYLOAD) {
         MCSCommandOptionsPayload pack = option_payload[packet->cmd];
-        char *usb_packet ={'\x00', '\x00'};
+        char *usb_packet[2] ={'\x00', '\x00'};
         //TODO
-        *size = 10;
+        *size = 2;
         return usb_packet;
     } else {
         return NULL;
