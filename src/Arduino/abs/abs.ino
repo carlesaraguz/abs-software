@@ -59,12 +59,12 @@ ADK adk(&Usb, "UPC, BarcelonaTech",
 void setup(void)
 {
     Serial.begin(115200);
-    //while (!Serial); 
+    //while(!Serial); 
     Serial.println("\r\nADK demo start");
         
     if(Usb.Init() == -1) {
         Serial.println("OSCOKIRQ failed to assert");
-        while(Usb.Init()==-1); /* retry */
+        while(Usb.Init() == -1); /* retry */
     }
     Timer1.initialize(500000);
     Timer1.pwm(9, 512);
@@ -174,8 +174,8 @@ void loop(void)
 void events(void)
 {  
     int i = 0;
-    for(i=0; i < eventCount; i++) {
-        if(time%event_list[i].time == 0) {
+    for(i = 0; i < eventCount; i++) {
+        if(time % event_list[i].time == 0) {
             Serial.println("Event num: "+String(i));
             //TODO
         }
