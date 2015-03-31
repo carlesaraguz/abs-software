@@ -91,7 +91,7 @@ void loop(void)
                 switch(mode) {    
                     case ANALOG_WRITE:
                         /* Analog Write */
-                        if(IS_PIN_ANALOG(pin) { 
+                        if(IS_PIN_ANALOG(pin)) { 
                             pinMode(pin, OUTPUT);
                             analogWrite(pin, (msg[0] << 5) & 0xC0);
                         } else {
@@ -100,7 +100,7 @@ void loop(void)
                         break;
                     case DIGITAL_WRITE:
                         /* Digital Write */
-                        if(IS_PIN_DIGITAL(pin) { 
+                        if(IS_PIN_DIGITAL(pin)) { 
                             pinMode(pin, OUTPUT); 
                             digitalWrite(pin, (msg[0] >> 2) & 0x01);
                         } else {
@@ -109,7 +109,7 @@ void loop(void)
                         break;
                     case ANALOG_READ:
                         /* Analog Read */
-                        if(IS_PIN_ANALOG(pin) { 
+                        if(IS_PIN_ANALOG(pin)) { 
                             res = analogRead(pin);
                         } else {
                             /* return error */
@@ -117,7 +117,7 @@ void loop(void)
                         break;
                     case DIGITAL_READ:
                         /* Digital Read */
-                        if(IS_PIN_DIGITAL(pin) { 
+                        if(IS_PIN_DIGITAL(pin)) { 
                             pinMode(pin, INPUT);
                             res = digitalRead(pin);
                         } else {
