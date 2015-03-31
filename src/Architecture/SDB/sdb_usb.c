@@ -2,9 +2,11 @@
 
 static char *sdb_to_usb(MCSPacket *packet, int *size)
 {
+    char *usb_packet = malloc(MAX_SIZE_USB_PACKET);
+
     if(packet->type == MCS_TYPE_PAYLOAD) {
         MCSCommandOptionsPayload pack = option_payload[packet->cmd];
-        char *usb_packet[2] ={'\x00', '\x00'};
+        usb_packet = {'a','b'};
         //TODO
         *size = 2;
         return usb_packet;
@@ -16,16 +18,16 @@ static char *sdb_to_usb(MCSPacket *packet, int *size)
 void *usb_thread(void *arg)
 {
     char *buffer;
-    QueueElement element;
+    QueueElement *element;
     MCSPacket *response;
     int data_size, packet_size, response_type;
-    char response_usb[MAX_SIZE_USB_RESPONSE];
+    char response_usb[MAX_SIZE_USB_PACKET];
     int fd = open(SDB_USB_DEVICE, O_RDWR);
 
     while(element = usb_queue_pop()) {
-        buffer = sdb_to_usb(element.data, &packet_size);
-        write(fd, buffer, packet_size);     
-        read(fd, response_usb, MAX_SIZE_USB_RESPONSE);           
+        buffer = sdb_to_usb(element->data, &packet_size);
+        write(fd, buffer, packet_size);
+        read(fd, response_usb, MAX_SIZE_USB_PACKET);
         response_type = (response_usb[0] << 3) & 0x03;
         switch(response_type) {
             case OK:
@@ -39,6 +41,7 @@ void *usb_thread(void *arg)
                 response = mcs_err_packet(EHWFAULT);
                 break;
         }
-        write_mcs_packet_module(response, element.id_process);
+        write_mcs_packet_module(response, element->id_process);
+        free(buffer);
     }
 }
