@@ -1,8 +1,20 @@
 USBPacket *usb_ok_packet(int id)
 {
     USBPacket *packet = (USBPacket *)malloc(sizeof(*packet));
-    packet->command = 0;
-    packet->parameters = 0;
+    packet->command = CONTROL;
+    packet->parameters = OK;
+    packet->cmd_arg1 = 0;
+    packet->cmd_arg2 = 0;
+    packet->data_size = 0;
+    packet->packet_id = id;
+    return packet;
+}
+
+USBPacket *usb_abort_packet(int id)
+{
+    USBPacket *packet = (USBPacket *)malloc(sizeof(*packet));
+    packet->command = CONTROL;
+    packet->parameters = ABORT;
     packet->cmd_arg1 = 0;
     packet->cmd_arg2 = 0;
     packet->data_size = 0;
@@ -13,8 +25,8 @@ USBPacket *usb_ok_packet(int id)
 USBPacket *usb_ok_data_packet(int id, char *result, int dsize)
 {
     USBPacket *packet = (USBPacket *)malloc(sizeof(*packet));
-    packet->command = 0;
-    packet->parameters = 1;
+    packet->command = CONTROL;
+    packet->parameters = OK_DATA;
     packet->data_size = dsize;
     packet->data = (uint8_t *)result;
     packet->packet_id = id;
@@ -24,8 +36,8 @@ USBPacket *usb_ok_data_packet(int id, char *result, int dsize)
 USBPacket *usb_error_packet(int id, int error)
 {
     USBPacket *packet = (USBPacket *)malloc(sizeof(*packet));
-    packet->command = 0;
-    packet->parameters = 2;
+    packet->command = CONTROL;
+    packet->parameters = ERRORS;
     packet->cmd_arg1 = error;
     packet->data_size = 0;
     packet->packet_id = id;
@@ -224,12 +236,19 @@ USBPacket *execute_packet(USBPacket *packet)
                         response = usb_ok_packet(packet->packet_id);
                         break;
                     case RECEIVE:
-                        data_arr = comms.rx();
+                        char *received;
+                        received=comms.rx();
+                        if(*received == 1){
+                            response = usb_ok_data_packet(packet->packet_id,
+                                                        received+2, *(received + 1));
+                        }else if(*received == 2){
+                            response = usb_abort_packet(packet->packet_id);
+                        }else{
+                            response = usb_error_packet(packet->packet_id,FCS_ERROR);
+                        }
                         break;
                     case CHANGE_X:
-                        parameter = packet->cmd_arg1;
-                        value = packet->cmd_arg2;
-                        comms.change_x(parameter,value);
+                        comms.change_x(packet->cmd_arg1,packet->cmd_arg2);
                         response = usb_ok_packet(packet->packet_id);
                         break;
                 }
