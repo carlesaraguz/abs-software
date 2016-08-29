@@ -7,8 +7,8 @@
 #include <Servo.h>
 #include <avr/wdt.h>
 #include "comms_test.h"
-#include <hdlc.h>
-#include <comms.h>
+#include "hdlc.h"
+#include "comms.h"
 
 Comms comms;
 
